@@ -11,6 +11,7 @@
  */
 
 #include <net/tcp.h>
+#include <linux/proc_fs.h>
 
 typedef char ipv4_ip[15];
 
@@ -102,7 +103,7 @@ static void get_tcp4_sock(struct sock *sk, struct seq_file *f)
                 timer_expires = jiffies;
         }
 
-        state = sk_state_load(sk);
+        state = inet_sk_state_load(sk);
         if (state == TCP_LISTEN)
                 rx_queue = sk->sk_ack_backlog;
         else
@@ -181,33 +182,61 @@ out:
  * /proc/net/stats_tcp file.  A callback will be made to connstat_seq_show
  * to generate content for the corresponding seq file when needed.
  */
-static const struct file_operations connstat_seq_fops = {
-        .owner   = THIS_MODULE,
-        .open    = tcp_seq_open,
-        .read    = seq_read,
-        .llseek  = seq_lseek,
-        .release = seq_release_net
+static const struct seq_operations connstat_seq_ops = {
+        .show           = connstat_seq_show,
+        .start          = tcp_seq_start,
+        .next           = tcp_seq_next,
+        .stop           = tcp_seq_stop,
 };
 
 static struct tcp_seq_afinfo connstat_seq_afinfo = {
-        .name           = "stats_tcp",
-	.family         = AF_INET,
-        .seq_fops       = &connstat_seq_fops,
-        .seq_ops        = {
-                .show           = connstat_seq_show,
-        },
+        .family         = AF_INET,
 };
 
 static int __net_init connstat_proc_init_net(struct net *net)
 {
-        return tcp_proc_register(net, &connstat_seq_afinfo);
+        if (!proc_create_net_data("stats_tcp", 0444, net->proc_net, &connstat_seq_ops,
+                        sizeof(struct tcp_iter_state), &connstat_seq_afinfo))
+                return -ENOMEM;
+        return 0;
 }
 
 static void __net_exit connstat_proc_exit_net(struct net *net)
 {
-	tcp_proc_unregister(net, &connstat_seq_afinfo);
+	remove_proc_entry("stats_tcp", net->proc_net);
 }
 
+/*
+ * static const struct file_operations connstat_seq_fops = {
+ *       .owner   = THIS_MODULE,
+ *       .open    = tcp_seq_open,
+ *       .read    = seq_read,
+ *       .llseek  = seq_lseek,
+ *       .release = seq_release_net
+ * };
+ *
+ *
+ *static struct tcp_seq_afinfo connstat_seq_afinfo = {
+ *       .name           = "stats_tcp",
+ *	 .family         = AF_INET,
+ *       .seq_fops       = &connstat_seq_fops,
+ *       .seq_ops        = {
+ *              .show           = connstat_seq_show,
+ *    },
+ *};
+ *
+ *
+ * static int __net_init connstat_proc_init_net(struct net *net)
+ * {
+ *        return tcp_proc_register(net, &connstat_seq_afinfo);
+ * }
+ *
+ *
+ * static void __net_exit connstat_proc_exit_net(struct net *net)
+ * {
+ * tcp_proc_unregister(net, &connstat_seq_afinfo);
+ * }
+ */
 
 static struct pernet_operations connstat_net_ops = {
         .init = connstat_proc_init_net,
