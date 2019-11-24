@@ -81,6 +81,7 @@ class Field(Enum):
     mss = 15, 'mss', 6, None
     rto = 16, 'rto', 8, None
     rtt = 17, 'rtt', 8, None
+    rxqueue = 18, 'rxqueue', 11, None
 
 
 output_fields = [Field.laddr, Field.lport, Field.raddr,
