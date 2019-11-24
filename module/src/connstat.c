@@ -15,7 +15,7 @@
 
 struct connstat_data {
 	__be32 laddr,
-	_be32 raddr,
+	__be32 raddr,
 	__u16 lport,
 	__u16 rport,
 	int state,
