@@ -14,25 +14,25 @@
 #include <linux/proc_fs.h>
 
 struct connstat_data {
-	__be32 laddr,
-	__be32 raddr,
-	__u16 lport,
-	__u16 rport,
-	int state,
-	u32 cwnd,
-	u32 rwnd,
-	u32 swnd,
-	u32 mss,
-	u32 insegs,
-	u32 outsegs,
-	u32 retranssegs,
-	u32 rto,
-	u32 rtt,
-	u32 suna,
-	u32 unsent,
-	u32 rxqueue,
-	u64 inbytes,
-	u64 outbytes,
+	__be32 laddr;
+	__be32 raddr;
+	__u16 lport;
+	__u16 rport;
+	int state;
+	u32 cwnd;
+	u32 rwnd;
+	u32 swnd;
+	u32 mss;
+	u32 insegs;
+	u32 outsegs;
+	u32 retranssegs;
+	u32 rto;
+	u32 rtt;
+	u32 suna;
+	u32 unsent;
+	u32 rxqueue;
+	u64 inbytes;
+	u64 outbytes;
 };
 
 typedef char ipv4_ip[15];
