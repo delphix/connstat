@@ -11,6 +11,7 @@
  */
 
 #include <net/tcp.h>
+#include <linux/inet.h>
 #include <linux/proc_fs.h>
 
 struct connstat_data {
