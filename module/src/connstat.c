@@ -35,8 +35,6 @@ struct connstat_data {
 	u64 outbytes;
 };
 
-typedef char ipv4_ip[15];
-
 #define GET_OCTET0(hip) (hip & 0xFF)
 #define GET_OCTET1(hip) ((hip >> 8) & 0xFF)
 #define GET_OCTET2(hip) ((hip >> 16) & 0xFF)
@@ -48,24 +46,23 @@ static char *tcp_state_strings[] = {
 	"LISTEN",    "CLOSING",	    "NEW_SYN_RECV", "MAX_STATES"
 };
 
-/* Convert hex ip to ipv4(XXX.XXX.XXX.XXX) */
-void hex_to_ipv4_ip(__be32 hip, ipv4_ip v4ip)
+/* Print an IPv4 address into the provided string and return that string. */
+static char *ipv4_ntop(__be32 addr, char *addrstr)
 {
-	sprintf(v4ip, "%d.%d.%d.%d", GET_OCTET0(hip), GET_OCTET1(hip),
-		GET_OCTET2(hip), GET_OCTET3(hip));
+	snprintf(addrstr, INET_ADDRSTRLEN, "%d.%d.%d.%d", GET_OCTET0(addr),
+		 GET_OCTET1(addr), GET_OCTET2(addr), GET_OCTET3(addr));
+	return addrstr;
 }
 
 static void record_ipv4_conn(struct seq_file *f, struct connstat_data *data)
 {
-	ipv4_ip laddr, raddr;
-
-	hex_to_ipv4_ip(data->laddr, laddr);
-	hex_to_ipv4_ip(data->raddr, raddr);
+	char laddr[INET_ADDRSTRLEN], raddr[INET_ADDRSTRLEN];
 
 	seq_printf(f,
 		   "%s,%u,%s,%u,%s,%llu,%u,%llu,%u,%u,"
 		   "%u,%u,%u,%u,%u,%u,%u,%u,%u",
-		   data->laddr, data->lport, data->raddr, data->rport,
+		   ipv4_ntop(data->laddr, laddr), data->lport,
+		   ipv4_ntop(data->raddr, raddr), data->rport,
 		   tcp_state_strings[data->state], data->inbytes, data->insegs,
 		   data->outbytes, data->outsegs, data->retranssegs, data->suna,
 		   data->unsent, data->swnd, data->cwnd, data->rwnd, data->mss,
