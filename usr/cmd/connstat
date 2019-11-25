@@ -245,4 +245,7 @@ while True:
         if count_index == 0:
             break
 
-    time.sleep(args.SECONDS)
+    try:
+        time.sleep(args.SECONDS)
+    except KeyboardInterrupt:
+        exit(0);
