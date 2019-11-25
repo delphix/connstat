@@ -50,7 +50,7 @@ static char *tcp_state_strings[] = {
 /* Print an IPv4 address into the provided string and return that string. */
 static char *ipv4_ntop(__be32 addr, char *addrstr)
 {
-	snprintf(addrstr, INET_ADDRSTRLEN, "%d.%d.%d.%d", GET_OCTET0(addr),
+	snprintf(addrstr, INET_ADDRSTRLEN, "%d.%d.%d.%dK", GET_OCTET0(addr),
 		 GET_OCTET1(addr), GET_OCTET2(addr), GET_OCTET3(addr));
 	return addrstr;
 }
@@ -61,7 +61,7 @@ static void record_ipv4_conn(struct seq_file *f, struct connstat_data *data)
 
 	seq_printf(f,
 		   "%s,%u,%s,%u,%s,%llu,%u,%llu,%u,%u,"
-		   "%u,%u,%u,%u,%u,%u,%u,%u,%u",
+		   "%u,%u,%u,%u,%u,%u,%u,%u,%uK",
 		   ipv4_ntop(data->laddr, laddr), data->lport,
 		   ipv4_ntop(data->raddr, raddr), data->rport,
 		   tcp_state_strings[data->state], data->inbytes, data->insegs,
