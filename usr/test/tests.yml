@@ -327,3 +327,10 @@
     - -o all
     - --output all
   exit: 0
+-
+  name: duplicate_connections
+  assertion: >
+    Connstat uniquifies connections in its output when the underlying stats
+    file includes multiple lines for the same connection.
+  arguments:
+  exit: 0
