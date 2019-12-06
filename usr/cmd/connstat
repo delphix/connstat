@@ -110,12 +110,10 @@ def initialize_fields():
 
 
 def filter_skip(line_str_list):
-    i = 0
-    for value in line_str_list:
+    for i, value in enumerate(line_str_list):
         field = proc_fields[i]
         if (field.filter and field.filter != value):
             return True
-        i += 1
     return False
 
 
@@ -141,8 +139,7 @@ def discover_proc_fields(stats_filename):
     # Iterate over all of the fields in the header and build an associated
     # representative list of Field objects.
     #
-    i = 0
-    for field_name in proc_field_names:
+    for i, field_name in enumerate(proc_field_names):
         if field_name in fields:
             field = fields[field_name]
         else:
@@ -150,7 +147,6 @@ def discover_proc_fields(stats_filename):
             field = Field(field_name, 0)
         field.index = i
         proc_fields.append(field)
-        i += 1
     return proc_fields
 
 
@@ -163,11 +159,11 @@ def discover_proc_fields(stats_filename):
 def connstat_regurgitate(stats_filename):
     headings_line = True
     table_str = ""
-    unique_strings = ""
+    connections = []
     for line_in in open(stats_filename):
         line_str_list = line_in.strip().split(',')
         line_out = ""
-        dup_check_line = ""
+        conn_id = ""
 
         # Omit headings(first) line for parsable output
         if args.parsable and headings_line:
@@ -180,24 +176,25 @@ def connstat_regurgitate(stats_filename):
             continue
         headings_line = False
 
-        # Ignore duplicate lines
+        #
+        # Ignore lines for connections we've already seen. This works around
+        # a bug in the TCP connection iterator in the kernel that erroneously
+        # visits the same connection more than once.
+        #
         for f in unique_fields:
-            dup_check_line += line_str_list[f.index]
-        if dup_check_line in unique_strings:
+            conn_id += line_str_list[f.index]
+        if conn_id in connections:
             continue
-        unique_strings += dup_check_line + '\n'
+        connections.append(conn_id)
 
         # Print selected fields using specified format
-        first_field = True
-        for f in output_fields:
-            if args.parsable:
-                if not first_field:
-                    line_out += ','
-                line_out += line_str_list[f.index]
-            else:
-                sformat = "{: >" + str(f.print_width) + "}"
-                line_out += sformat.format(line_str_list[f.index], format)
-            first_field = False
+        if args.parsable:
+            line_out = ','.join([line_str_list[f.index]
+                                for f in output_fields])
+        else:
+            line_out = ''.join(['%*s' % (f.print_width, line_str_list[f.index])
+                               for f in output_fields])
+
         table_str += line_out + '\n'
 
     return table_str

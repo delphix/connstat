@@ -98,9 +98,7 @@ def normalize_arguments_list(arguments_list):
     return arguments_list
 
 
-def generate_output_files():
-    tests = load_test_data()
-
+def generate_output_files(tests):
     for test_data in tests:
         #
         # Only generate output files for tests that don't expect connstat to
@@ -125,20 +123,7 @@ def generate_output_files():
             print(err.stderr)
 
 
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(prog='connstat_unittest')
-    parser.add_argument('-g', '--generate_output', action='store_true',
-                        default=False,
-                        help='Generate unit test output files')
-    args = parser.parse_args()
-
-    if args.generate_output:
-        generate_output_files()
-        sys.exit()
-
-    tests = load_test_data()
-
+def run_tests(tests):
     for test_data in tests:
         arguments_list = normalize_arguments_list(test_data['arguments'])
         test_method = test_generator(name=test_data['name'],
@@ -147,3 +132,18 @@ if __name__ == '__main__':
         test_method.__name__ = 'test_' + test_data['name']
         setattr(ConnstatTest, test_method.__name__, test_method)
     unittest.main(verbosity=2)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='connstat_unittest')
+    parser.add_argument('-g', '--generate_output', action='store_true',
+                        default=False,
+                        help='Generate unit test output files')
+    args = parser.parse_args()
+
+    tests = load_test_data()
+
+    if args.generate_output:
+        generate_output_files(tests)
+    else:
+        run_tests(tests)
